@@ -1,17 +1,15 @@
 package com.parsing.OrderFulfillmentSystem.Service.Impl;
 
-import com.parsing.OrderFulfillmentSystem.Entity.Order;
 import com.parsing.OrderFulfillmentSystem.Model.OrderModel;
+import com.parsing.OrderFulfillmentSystem.Model.ProductModel;
 import com.parsing.OrderFulfillmentSystem.Service.ParseCsvFilesService;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
 
 import static com.parsing.OrderFulfillmentSystem.Shared.sharedObjects.INSTANCE;
@@ -71,7 +69,51 @@ public class ParseCsvFilesServiceImpl implements ParseCsvFilesService {
      }
 
 
+    @Override
+    public void parseProductCsvFiles() {
+
+        try {
+            INSTANCE.isReadingProductFiles=true;
+            while (!INSTANCE.productFiles.isEmpty()){
+                processProduct(INSTANCE.productFiles.poll());
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        finally {
+            INSTANCE.isReadingProductFiles=false;
+        }
+    }
+
+  private void processProduct(String file){
+        try {
+            Path path= Path.of(file);
+
+            CSVParser csvParser =new CSVParser(Files.newBufferedReader(path),
+                    CSVFormat.DEFAULT.withFirstRecordAsHeader());
+            
+            boolean header=false;
+            for (CSVRecord record : csvParser){
+                if(!header) {
+                    header=true;
+                    continue;
+                }
+                if(record.size()==4){
+                    ProductModel product = ProductModel
+                            .builder()
+                            .name(record.get(0))
+                            .description(record.get(1))
+                            .stock(Integer.valueOf(record.get(2)))
+                            .price(Double.valueOf(record.get(3)))
+                            .build();
+
+                    INSTANCE.productQueue.put(product);
+                }
+            }
 
 
-
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+  }
 }
