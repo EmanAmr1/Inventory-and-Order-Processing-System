@@ -1,5 +1,5 @@
 CREATE TABLE order_table (
-                             id BIGINT ,
+                             id BIGINT AUTO_INCREMENT PRIMARY KEY,
                              customer_name VARCHAR(255) NOT NULL,
                              product_id BIGINT NOT NULL,
                              quantity INT NOT NULL,
@@ -8,7 +8,7 @@ CREATE TABLE order_table (
 );
 
 CREATE TABLE product_table (
-                               id BIGINT ,
+                               id BIGINT AUTO_INCREMENT PRIMARY KEY,
                                name VARCHAR(255) NOT NULL,
                                description VARCHAR(255),
                                price DECIMAL(10, 2) NOT NULL,
@@ -16,7 +16,7 @@ CREATE TABLE product_table (
 );
 
 CREATE TABLE shipment_table (
-                                id BIGINT ,
+                                id BIGINT AUTO_INCREMENT PRIMARY KEY,
                                 order_id BIGINT NOT NULL,
                                 shipment_date TIMESTAMP NOT NULL,
                                 tracking_number VARCHAR(255) NOT NULL,
@@ -25,7 +25,7 @@ CREATE TABLE shipment_table (
 );
 
 CREATE TABLE invoice_table (
-                               id BIGINT ,
+                               id BIGINT AUTO_INCREMENT PRIMARY KEY,
                                order_id BIGINT NOT NULL,
                                invoice_date TIMESTAMP NOT NULL,
                                total DECIMAL(10, 2) NOT NULL,

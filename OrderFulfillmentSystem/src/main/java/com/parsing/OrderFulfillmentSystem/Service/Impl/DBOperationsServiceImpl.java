@@ -12,7 +12,7 @@ import com.parsing.OrderFulfillmentSystem.Repo.InvoiceRepo;
 import com.parsing.OrderFulfillmentSystem.Repo.OrderRepo;
 import com.parsing.OrderFulfillmentSystem.Repo.ProductRepo;
 import com.parsing.OrderFulfillmentSystem.Repo.ShipmentRepo;
-import com.parsing.OrderFulfillmentSystem.Service.BbOperationsService;
+import com.parsing.OrderFulfillmentSystem.Service.DBOperationsService;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -22,7 +22,7 @@ import java.util.concurrent.CompletableFuture;
 import static com.parsing.OrderFulfillmentSystem.Shared.sharedObjects.INSTANCE;
 
 @Service
-public class BbOperationsServiceImpl implements BbOperationsService {
+public class DBOperationsServiceImpl implements DBOperationsService {
 
 
     List<Order> orderList = new ArrayList<>();
@@ -35,7 +35,7 @@ public class BbOperationsServiceImpl implements BbOperationsService {
     private final ProductRepo productRepo;
     private final ShipmentRepo shipmentRepo;
     private final InvoiceRepo invoiceRepo;
-    public BbOperationsServiceImpl(OrderRepo orderRepo, ProductRepo productRepo, ShipmentRepo shipmentRepo, InvoiceRepo invoiceRepo) {
+    public DBOperationsServiceImpl(OrderRepo orderRepo, ProductRepo productRepo, ShipmentRepo shipmentRepo, InvoiceRepo invoiceRepo) {
         this.orderRepo = orderRepo;
         this.productRepo = productRepo;
         this.shipmentRepo = shipmentRepo;
@@ -129,6 +129,7 @@ public class BbOperationsServiceImpl implements BbOperationsService {
         CompletableFuture.runAsync(()-> {
             productRepo.saveAll(newProductList);
         }).exceptionally((ex)->{
+            ex.printStackTrace();
             System.out.println("Error while inserting connections");
             return null;
         });
