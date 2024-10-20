@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 import static com.parsing.OrderFulfillmentSystem.Shared.sharedObjects.INSTANCE;
 
@@ -42,9 +43,13 @@ public class ParseCsvFilesServiceImpl implements ParseCsvFilesService {
             CSVParser csvParser = new CSVParser(Files.newBufferedReader(path),
                     CSVFormat.DEFAULT.withFirstRecordAsHeader());
 
+            // Define a formatter to append time '00:00:00'
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
             for (CSVRecord record : csvParser){
-                 System.out.println("Record: " + record);
+
+                String orderDateString = record.get(4) + " 00:00:00";
+                LocalDateTime orderDate = LocalDateTime.parse(orderDateString, formatter);
 
                 if(record.size()==5){
                     OrderModel order =OrderModel
@@ -52,8 +57,8 @@ public class ParseCsvFilesServiceImpl implements ParseCsvFilesService {
                             .customerName(record.get(0))
                             .status(record.get(1))
                             .quantity(Integer.valueOf(record.get(3)))
-                            .productId(Long.valueOf(record.get(4)))
-                            .orderDate(LocalDateTime.parse(record.get(5)))
+                            .productId(Long.valueOf(record.get(2)))
+                            .orderDate(orderDate)
                       .build();
 
                     INSTANCE.orderQueue.put(order);
@@ -87,17 +92,14 @@ public class ParseCsvFilesServiceImpl implements ParseCsvFilesService {
 
     private void processProduct(String file){
         try {
-            Path path= Path.of(file);
-            System.out.println("Attempting to open file at path: " + path.toAbsolutePath());
-            CSVParser csvParser =new CSVParser(Files.newBufferedReader(path),
+
+            CSVParser csvParser =new CSVParser(Files.newBufferedReader(Path.of(file)),
                     CSVFormat.DEFAULT.withFirstRecordAsHeader());
 
             for (CSVRecord record : csvParser){
-                System.out.println("Record: " + record);
                 if(record.size()==4){
                     ProductModel product = ProductModel
                             .builder()
-                            .id(Long.valueOf(record.get(2)))
                             .name(record.get(0))
                             .description(record.get(1))
                             .stock(Integer.valueOf(record.get(2)))
@@ -141,13 +143,18 @@ public class ParseCsvFilesServiceImpl implements ParseCsvFilesService {
             CSVParser csvParser =new CSVParser(Files.newBufferedReader(path),
                     CSVFormat.DEFAULT.withFirstRecordAsHeader());
 
+            // Define a formatter to append time '00:00:00'
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
             for (CSVRecord record : csvParser){
 
                 if(record.size()==5){
+                    String shipmentDateString = record.get(0) + " 00:00:00";
+                    LocalDateTime shipmentDate = LocalDateTime.parse(shipmentDateString, formatter);
+
                     ShipmentModel shipmentModel=ShipmentModel
                             .builder()
-                            .shipmentDate(LocalDateTime.parse(record.get(0)))
+                            .shipmentDate(shipmentDate)
                             .trackingNumber(record.get(1))
                             .status(record.get(2))
                             .carrier(record.get(3))
@@ -186,12 +193,17 @@ public class ParseCsvFilesServiceImpl implements ParseCsvFilesService {
             CSVParser csvParser =new CSVParser(Files.newBufferedReader(path),
                     CSVFormat.DEFAULT.withFirstRecordAsHeader());
 
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
             for (CSVRecord record : csvParser){
+
+                String invoiceDateString = record.get(0) + " 00:00:00";
+                LocalDateTime invoiceDate = LocalDateTime.parse(invoiceDateString, formatter);
 
                 if(record.size()==4){
                     InvoiceModel invoice =InvoiceModel
                             .builder()
-                            .invoiceDate(LocalDateTime.parse(record.get(0)))
+                            .invoiceDate(invoiceDate)
                             .orderId(Long.valueOf(record.get(1)))
                             .paymentStatus(record.get(2))
                             .total(Double.valueOf(record.get(3)))
