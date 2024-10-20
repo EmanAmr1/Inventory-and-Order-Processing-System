@@ -9,7 +9,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import static com.parsing.OrderFulfillmentSystem.Shared.sharedObjects.INSTANCE;
 
 @Service
-public class LoadCsvCsvFilesServiceImpl implements LoadCsvFilesService {
+public class LoadCsvFilesServiceImpl implements LoadCsvFilesService {
 
     @Override
     public void loadCsvFiles(String Directory) {
