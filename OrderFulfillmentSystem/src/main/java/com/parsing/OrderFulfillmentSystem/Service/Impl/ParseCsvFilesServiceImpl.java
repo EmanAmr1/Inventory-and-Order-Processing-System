@@ -42,13 +42,9 @@ public class ParseCsvFilesServiceImpl implements ParseCsvFilesService {
             CSVParser csvParser = new CSVParser(Files.newBufferedReader(path),
                     CSVFormat.DEFAULT.withFirstRecordAsHeader());
 
-            boolean header=false;
-            for (CSVRecord record : csvParser){
 
-                if(!header) {
-                    header=true;
-                    continue;
-                }
+            for (CSVRecord record : csvParser){
+                 System.out.println("Record: " + record);
 
                 if(record.size()==5){
                     OrderModel order =OrderModel
@@ -92,19 +88,16 @@ public class ParseCsvFilesServiceImpl implements ParseCsvFilesService {
     private void processProduct(String file){
         try {
             Path path= Path.of(file);
-
+            System.out.println("Attempting to open file at path: " + path.toAbsolutePath());
             CSVParser csvParser =new CSVParser(Files.newBufferedReader(path),
                     CSVFormat.DEFAULT.withFirstRecordAsHeader());
-            
-            boolean header=false;
+
             for (CSVRecord record : csvParser){
-                if(!header) {
-                    header=true;
-                    continue;
-                }
+                System.out.println("Record: " + record);
                 if(record.size()==4){
                     ProductModel product = ProductModel
                             .builder()
+                            .id(Long.valueOf(record.get(2)))
                             .name(record.get(0))
                             .description(record.get(1))
                             .stock(Integer.valueOf(record.get(2)))
@@ -117,7 +110,9 @@ public class ParseCsvFilesServiceImpl implements ParseCsvFilesService {
 
 
         }catch (Exception e){
+            System.err.println("Failed to create path from file: " + file);
             e.printStackTrace();
+            return;
         }
   }
 
@@ -146,12 +141,9 @@ public class ParseCsvFilesServiceImpl implements ParseCsvFilesService {
             CSVParser csvParser =new CSVParser(Files.newBufferedReader(path),
                     CSVFormat.DEFAULT.withFirstRecordAsHeader());
 
-            boolean header=false;
+
             for (CSVRecord record : csvParser){
-                if(!header) {
-                    header=true;
-                    continue;
-                }
+
                 if(record.size()==5){
                     ShipmentModel shipmentModel=ShipmentModel
                             .builder()
@@ -194,12 +186,8 @@ public class ParseCsvFilesServiceImpl implements ParseCsvFilesService {
             CSVParser csvParser =new CSVParser(Files.newBufferedReader(path),
                     CSVFormat.DEFAULT.withFirstRecordAsHeader());
 
-            boolean header=false;
             for (CSVRecord record : csvParser){
-                if(!header) {
-                    header=true;
-                    continue;
-                }
+
                 if(record.size()==4){
                     InvoiceModel invoice =InvoiceModel
                             .builder()
