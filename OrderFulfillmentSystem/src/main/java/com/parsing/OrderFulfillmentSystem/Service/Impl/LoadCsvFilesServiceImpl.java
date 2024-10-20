@@ -19,13 +19,13 @@ public class LoadCsvFilesServiceImpl implements LoadCsvFilesService {
                 public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
 
                     String fileName = file.getFileName().toString();
-
+                    String filePath= file.toAbsolutePath().toString();
                     if(fileName.endsWith(".csv")){
 
-                        if(fileName.toLowerCase().contains("order")) INSTANCE.orderFiles.add(fileName);
-                        else if(fileName.toLowerCase().contains("product")) INSTANCE.productFiles.add(fileName);
-                        else if(fileName.toLowerCase().contains(("shipment"))) INSTANCE.shipmentFiles.add(fileName);
-                        else if(fileName.toLowerCase().contains(("invoice"))) INSTANCE.invoiceFiles.add(fileName);
+                        if(fileName.toLowerCase().contains("order")) INSTANCE.orderFiles.add(filePath);
+                        else if(fileName.toLowerCase().contains("product")) INSTANCE.productFiles.add(filePath);
+                        else if(fileName.toLowerCase().contains(("shipment"))) INSTANCE.shipmentFiles.add(filePath);
+                        else if(fileName.toLowerCase().contains(("invoice"))) INSTANCE.invoiceFiles.add(filePath);
                     }
                     return FileVisitResult.CONTINUE;
                 }
