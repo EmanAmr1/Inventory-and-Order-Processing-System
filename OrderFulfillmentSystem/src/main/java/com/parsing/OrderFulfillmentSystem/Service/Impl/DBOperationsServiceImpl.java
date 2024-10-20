@@ -50,7 +50,6 @@ public class DBOperationsServiceImpl implements DBOperationsService {
                OrderModel orderModel= INSTANCE.orderQueue.take();
                Order order = createOrder(orderModel);
                orderList.add(order);
-                System.out.println("Added order to the list: ID = " + orderModel.getCustomerName());
                   if (orderList.size()==1000)
                   {
                       pushOrderToDB();
