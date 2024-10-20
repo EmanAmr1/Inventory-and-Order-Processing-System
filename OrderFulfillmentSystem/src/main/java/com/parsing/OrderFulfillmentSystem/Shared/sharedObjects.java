@@ -25,10 +25,10 @@ public enum sharedObjects {
     public final Deque<String> invoiceFiles = new ArrayDeque<>();
 
 
-    public boolean isOrderFiles=false;
-    public boolean isProductFiles=false;
-    public boolean isShipmentFiles=false;
-    public boolean isInvoiceFiles=false;
+    public boolean isReadingOrderFiles=false;
+    public boolean isReadingProductFiles=false;
+    public boolean isReadingShipmentFiles=false;
+    public boolean isReadingInvoiceFiles=false;
 
 
 }
