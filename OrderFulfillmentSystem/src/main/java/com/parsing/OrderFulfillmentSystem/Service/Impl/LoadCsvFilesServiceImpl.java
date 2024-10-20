@@ -23,9 +23,9 @@ public class LoadCsvFilesServiceImpl implements LoadCsvFilesService {
                     if(fileName.endsWith(".csv")){
 
                         if(fileName.toLowerCase().contains("order")) INSTANCE.orderFiles.add(fileName);
-                        if(fileName.toLowerCase().contains("product")) INSTANCE.productFiles.add(fileName);
-                        if(fileName.toLowerCase().contains(("shipment"))) INSTANCE.shipmentFiles.add(fileName);
-                        if(fileName.toLowerCase().contains(("invoice"))) INSTANCE.invoiceFiles.add(fileName);
+                        else if(fileName.toLowerCase().contains("product")) INSTANCE.productFiles.add(fileName);
+                        else if(fileName.toLowerCase().contains(("shipment"))) INSTANCE.shipmentFiles.add(fileName);
+                        else if(fileName.toLowerCase().contains(("invoice"))) INSTANCE.invoiceFiles.add(fileName);
                     }
                     return FileVisitResult.CONTINUE;
                 }
