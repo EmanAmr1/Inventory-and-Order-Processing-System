@@ -2,6 +2,7 @@ package com.parsing.OrderFulfillmentSystem.Service.Impl;
 
 import com.parsing.OrderFulfillmentSystem.Model.OrderModel;
 import com.parsing.OrderFulfillmentSystem.Model.ProductModel;
+import com.parsing.OrderFulfillmentSystem.Model.ShipmentModel;
 import com.parsing.OrderFulfillmentSystem.Service.ParseCsvFilesService;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -68,7 +69,7 @@ public class ParseCsvFilesServiceImpl implements ParseCsvFilesService {
 
      }
 
-
+///////////////////////////////////////////////////////////
     @Override
     public void parseProductCsvFiles() {
 
@@ -85,7 +86,9 @@ public class ParseCsvFilesServiceImpl implements ParseCsvFilesService {
         }
     }
 
-  private void processProduct(String file){
+
+
+    private void processProduct(String file){
         try {
             Path path= Path.of(file);
 
@@ -111,6 +114,55 @@ public class ParseCsvFilesServiceImpl implements ParseCsvFilesService {
                 }
             }
 
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+  }
+
+  ////////////////////////////////////////////////////////////////////
+
+    @Override
+    public void parseShipmentCsvFiles() {
+    try {
+        INSTANCE.isReadingShipmentFiles=true;
+        while (!INSTANCE.shipmentFiles.isEmpty()){
+            processShipment(INSTANCE.shipmentFiles.poll());
+        }
+    }catch (Exception e){
+        e.printStackTrace();
+    }
+    finally {
+        INSTANCE.isReadingShipmentFiles=false;
+    }
+    }
+
+  private void processShipment(String file){
+        try {
+            Path path= Path.of(file);
+
+            CSVParser csvParser =new CSVParser(Files.newBufferedReader(path),
+                    CSVFormat.DEFAULT.withFirstRecordAsHeader());
+
+            boolean header=false;
+            for (CSVRecord record : csvParser){
+                if(!header) {
+                    header=true;
+                    continue;
+                }
+                if(record.size()==5){
+                    ShipmentModel shipmentModel=ShipmentModel
+                            .builder()
+                            .shipmentDate(LocalDateTime.parse(record.get(0)))
+                            .trackingNumber(record.get(1))
+                            .status(record.get(2))
+                            .carrier(record.get(3))
+                            .orderId(Long.valueOf(record.get(4)))
+                            .build();
+
+                    INSTANCE.shipmentQueue.put(shipmentModel);
+                }
+            }
 
         }catch (Exception e){
             e.printStackTrace();
