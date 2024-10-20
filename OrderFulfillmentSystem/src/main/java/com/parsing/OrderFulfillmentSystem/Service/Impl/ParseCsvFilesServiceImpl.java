@@ -1,5 +1,6 @@
 package com.parsing.OrderFulfillmentSystem.Service.Impl;
 
+import com.parsing.OrderFulfillmentSystem.Model.InvoiceModel;
 import com.parsing.OrderFulfillmentSystem.Model.OrderModel;
 import com.parsing.OrderFulfillmentSystem.Model.ProductModel;
 import com.parsing.OrderFulfillmentSystem.Model.ShipmentModel;
@@ -137,7 +138,8 @@ public class ParseCsvFilesServiceImpl implements ParseCsvFilesService {
     }
     }
 
-  private void processShipment(String file){
+
+    private void processShipment(String file){
         try {
             Path path= Path.of(file);
 
@@ -168,4 +170,51 @@ public class ParseCsvFilesServiceImpl implements ParseCsvFilesService {
             e.printStackTrace();
         }
   }
+  /////////////////////////////////////////////////////////////////////////
+
+    @Override
+    public void parseInvoiceCsvFiles() {
+        try {
+            INSTANCE.isReadingInvoiceFiles=true;
+            while (!INSTANCE.invoiceFiles.isEmpty()){
+                processInvoice(INSTANCE.invoiceFiles.poll());
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        finally {
+            INSTANCE.isReadingInvoiceFiles=false;
+        }
+    }
+
+    private void processInvoice(String file){
+        try {
+            Path path= Path.of(file);
+
+            CSVParser csvParser =new CSVParser(Files.newBufferedReader(path),
+                    CSVFormat.DEFAULT.withFirstRecordAsHeader());
+
+            boolean header=false;
+            for (CSVRecord record : csvParser){
+                if(!header) {
+                    header=true;
+                    continue;
+                }
+                if(record.size()==4){
+                    InvoiceModel invoice =InvoiceModel
+                            .builder()
+                            .invoiceDate(LocalDateTime.parse(record.get(0)))
+                            .orderId(Long.valueOf(record.get(1)))
+                            .paymentStatus(record.get(2))
+                            .total(Double.valueOf(record.get(3)))
+                            .build();
+
+                    INSTANCE.invoiceQueue.put(invoice);
+
+                }
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
 }
