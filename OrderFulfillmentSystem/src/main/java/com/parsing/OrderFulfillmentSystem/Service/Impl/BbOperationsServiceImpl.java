@@ -1,8 +1,11 @@
 package com.parsing.OrderFulfillmentSystem.Service.Impl;
 
 import com.parsing.OrderFulfillmentSystem.Entity.Order;
+import com.parsing.OrderFulfillmentSystem.Entity.Product;
 import com.parsing.OrderFulfillmentSystem.Model.OrderModel;
+import com.parsing.OrderFulfillmentSystem.Model.ProductModel;
 import com.parsing.OrderFulfillmentSystem.Repo.OrderRepo;
+import com.parsing.OrderFulfillmentSystem.Repo.ProductRepo;
 import com.parsing.OrderFulfillmentSystem.Service.BbOperationsService;
 import org.springframework.stereotype.Service;
 
@@ -15,11 +18,16 @@ import static com.parsing.OrderFulfillmentSystem.Shared.sharedObjects.INSTANCE;
 @Service
 public class BbOperationsServiceImpl implements BbOperationsService {
 
-    private final OrderRepo orderRepo;
-    List<Order> orderList = new ArrayList<>();
 
-    public BbOperationsServiceImpl(OrderRepo orderRepo) {
+    List<Order> orderList = new ArrayList<>();
+    List<Product> productList = new ArrayList<>();
+
+
+    private final OrderRepo orderRepo;
+    private final ProductRepo productRepo;
+    public BbOperationsServiceImpl(OrderRepo orderRepo, ProductRepo productRepo) {
         this.orderRepo = orderRepo;
+        this.productRepo = productRepo;
     }
 
     @Override
@@ -69,5 +77,49 @@ public class BbOperationsServiceImpl implements BbOperationsService {
                 });
     }
 
+    //////////////////////////////////////////////////////////////
+
+    @Override
+    public void addProduct() {
+      try {
+
+          System.out.println("Starting to add product.");
+          while (!INSTANCE.productQueue.isEmpty()){
+              ProductModel productModel = INSTANCE.productQueue.take();
+              Product product=createProduct(productModel);
+              productList.add(product);
+              if (productList.size()==1000){
+                  pushProductToDB();
+              }
+          }if (!productList.isEmpty()){
+              System.out.println("Pushing remaining {} nodes into the database."+ productList.size());
+              pushProductToDB();
+          }
+      }catch (Exception e){
+          e.printStackTrace();
+      }
+    }
+
+    private Product createProduct(ProductModel productModel){
+        Product product =Product
+                .builder()
+                .stock(productModel.getStock())
+                .price(productModel.getPrice())
+                .description(productModel.getDescription())
+                .name(productModel.getName())
+                .build();
+        return product;
+    }
+
+    private void pushProductToDB(){
+        List<Product> newProductList = productList;
+        productList = new ArrayList<>();
+        CompletableFuture.runAsync(()-> {
+            productRepo.saveAll(productList);
+        }).exceptionally((ex)->{
+            System.out.println("Error while inserting connections");
+            return null;
+        });
+    }
 
 }
