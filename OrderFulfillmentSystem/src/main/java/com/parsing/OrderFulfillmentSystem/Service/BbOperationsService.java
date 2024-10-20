@@ -4,5 +4,6 @@ public interface BbOperationsService {
    public void addOrder();
    public void addProduct();
    public void addShipment();
+   public void addInvoice();
 
 }

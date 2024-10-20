@@ -1,11 +1,14 @@
 package com.parsing.OrderFulfillmentSystem.Service.Impl;
 
+import com.parsing.OrderFulfillmentSystem.Entity.Invoice;
 import com.parsing.OrderFulfillmentSystem.Entity.Order;
 import com.parsing.OrderFulfillmentSystem.Entity.Product;
 import com.parsing.OrderFulfillmentSystem.Entity.Shipment;
+import com.parsing.OrderFulfillmentSystem.Model.InvoiceModel;
 import com.parsing.OrderFulfillmentSystem.Model.OrderModel;
 import com.parsing.OrderFulfillmentSystem.Model.ProductModel;
 import com.parsing.OrderFulfillmentSystem.Model.ShipmentModel;
+import com.parsing.OrderFulfillmentSystem.Repo.InvoiceRepo;
 import com.parsing.OrderFulfillmentSystem.Repo.OrderRepo;
 import com.parsing.OrderFulfillmentSystem.Repo.ProductRepo;
 import com.parsing.OrderFulfillmentSystem.Repo.ShipmentRepo;
@@ -25,15 +28,18 @@ public class BbOperationsServiceImpl implements BbOperationsService {
     List<Order> orderList = new ArrayList<>();
     List<Product> productList = new ArrayList<>();
     List<Shipment> shipmentList = new ArrayList<>();
+    List<Invoice> invoiceList = new ArrayList<>();
 
 
     private final OrderRepo orderRepo;
     private final ProductRepo productRepo;
     private final ShipmentRepo shipmentRepo;
-    public BbOperationsServiceImpl(OrderRepo orderRepo, ProductRepo productRepo, ShipmentRepo shipmentRepo) {
+    private final InvoiceRepo invoiceRepo;
+    public BbOperationsServiceImpl(OrderRepo orderRepo, ProductRepo productRepo, ShipmentRepo shipmentRepo, InvoiceRepo invoiceRepo) {
         this.orderRepo = orderRepo;
         this.productRepo = productRepo;
         this.shipmentRepo = shipmentRepo;
+        this.invoiceRepo = invoiceRepo;
     }
 
     @Override
@@ -167,10 +173,59 @@ public class BbOperationsServiceImpl implements BbOperationsService {
         List<Shipment> newShipmentList = shipmentList;
         shipmentList = new ArrayList<>();
         CompletableFuture.runAsync(()-> {
-            shipmentRepo.saveAll(shipmentList)
+            shipmentRepo.saveAll(shipmentList);
         }).exceptionally((ex)->{
             System.out.println("Error while inserting connections");
             return null;
         });
    }
+
+
+   ///////////////////////////////////////////////////////////////////////
+
+
+    @Override
+    public void addInvoice() {
+        try {
+            System.out.println("Starting to add invoice.");
+            while (!INSTANCE.invoiceQueue.isEmpty()){
+                InvoiceModel invoiceModel = INSTANCE.invoiceQueue.take();
+                Invoice invoice = createInvoice(invoiceModel);
+                invoiceList.add(invoice);
+                if (invoiceList.size()==1000){
+                    pushInvoiceToDB();
+                }
+            }if (!invoiceList.isEmpty()){
+                System.out.println("Pushing remaining {} nodes into the database."+ invoiceList.size());
+                pushInvoiceToDB();
+            }
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    private Invoice createInvoice(InvoiceModel invoiceModel){
+        Invoice invoice =Invoice
+                .builder()
+                .invoiceDate(invoiceModel.getInvoiceDate())
+                .orderId(invoiceModel.getOrderId())
+                .total(invoiceModel.getTotal())
+                .paymentStatus(invoiceModel.getPaymentStatus())
+                .build();
+
+        return invoice;
+    }
+
+    private void pushInvoiceToDB(){
+        List<Invoice> newInvoiceList = invoiceList;
+        invoiceList = new ArrayList<>();
+        CompletableFuture.runAsync(()-> {
+            invoiceRepo.saveAll(newInvoiceList);
+        }).exceptionally((ex)->{
+            System.out.println("Error while inserting connections");
+            return null;
+        });
+    }
+
 }
